@@ -1,3 +1,5 @@
-export default function Page() {
-  return <main className="grid h-full place-items-center text-sm text-fg-muted">Assetora — coming soon</main>
+import { AssetoraDashboard } from "@/components/dashboard"
+
+export default function AssetoraPage() {
+  return <AssetoraDashboard />
 }
