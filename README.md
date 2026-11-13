@@ -23,13 +23,16 @@ Other scripts: `pnpm build` · `pnpm start` · `pnpm lint`
 
 ## What works
 
-- **Sidebar** collapses to an icon rail (button or <kbd>⌘B</kbd>); agents and pinned properties filter the table
+- **Sidebar** collapses to an icon rail (button or <kbd>⌘B</kbd>, which skips the animation). The logo stays, labels fade, the toggle glides under the logo and collapsed items show tooltips. Agents and pinned properties filter the table
+- **Small screens**: below 1024px the sidebar is an off-canvas drawer (menu button, scrim, <kbd>Esc</kbd>). Below 768px search collapses to an icon, KPIs scroll sideways, the chart crosshair follows a finger, sales become cards, and filters, sorting and dates sit behind one **Filters** bottom sheet. Popovers and calendars open as bottom sheets
 - **Search** filters the table; <kbd>/</kbd> focuses it, <kbd>Esc</kbd> clears it
 - **Export** downloads a CSV of the visible rows
 - **Date range** opens a two-month calendar
 - **KPI menus** switch the comparison period (month, quarter, year) and copy values
 - **Chart**: hover or arrow keys show a crosshair with sold counts. *Annually* switches to the last 6 months or last quarter, and the compare toggle (or legend) hides last year's line
 - **Table**: filter by state or date range, sort by sold date or price, with an empty state when nothing matches
+- **Notifications**: *Mark all as read* clears the unread dots
+- **Not built yet**: other nav items, account menu items, KPI details and support chat show a "… is coming soon" toast (`comingSoon()` in `lib/prototype.ts`)
 
 ## Stack
 
@@ -49,4 +52,7 @@ Other scripts: `pnpm build` · `pnpm start` · `pnpm lint`
 | [`components/selling-report.tsx`](components/selling-report.tsx) | Selling report chart, legend, period menu and compare toggle |
 | [`components/selling-history.tsx`](components/selling-history.tsx) | Selling history table with filters and sorting |
 | [`components/primitives.tsx`](components/primitives.tsx) | Small shared pieces (Figma icon, avatar, menu button) |
+| [`components/sheet.tsx`](components/sheet.tsx) | Bottom sheet (Base UI Drawer) and a popover that becomes a sheet on phones |
+| [`lib/prototype.ts`](lib/prototype.ts) | `comingSoon()` toast for features outside the prototype |
+| [`app/icon.svg`](app/icon.svg), [`app/apple-icon.tsx`](app/apple-icon.tsx) | Favicon and Apple touch icon from the logo mark |
 | [`lib/data.ts`](lib/data.ts) | Mock properties, KPIs, chart series and sales |
