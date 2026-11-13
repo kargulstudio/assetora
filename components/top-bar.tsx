@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { comingSoon } from "@/lib/prototype"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { NOTIFICATIONS } from "@/lib/data"
@@ -19,6 +20,7 @@ export function TopBar({
   onExport: () => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [unread, setUnread] = useState(() => new Set(NOTIFICATIONS.map((n) => n.id)))
 
   // "/" focuses search from anywhere
   useEffect(() => {
@@ -125,7 +127,7 @@ export function TopBar({
             <div className="my-1 h-px bg-(--as-line)" />
             <button
               type="button"
-              onClick={() => toast("Support chat isn't part of this prototype")}
+              onClick={() => comingSoon("Support chat")}
               className="w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-sm font-medium text-(--as-muted) hover:bg-(--as-sunken) hover:text-(--as-ink)"
             >
               Contact support
@@ -154,8 +156,12 @@ export function TopBar({
               <p className="text-xs font-medium text-(--as-subtle)">Notifications</p>
               <button
                 type="button"
-                onClick={() => toast.success("All notifications marked as read")}
-                className="cursor-pointer text-xs font-medium text-(--as-blue) hover:underline"
+                disabled={!unread.size}
+                onClick={() => {
+                  setUnread(new Set())
+                  toast.success("All notifications marked as read")
+                }}
+                className="cursor-pointer text-xs font-medium text-(--as-blue) hover:underline disabled:cursor-default disabled:text-(--as-subtle) disabled:no-underline"
               >
                 Mark all as read
               </button>
@@ -163,7 +169,15 @@ export function TopBar({
             {NOTIFICATIONS.map((n) => (
               <div key={n.id} className="flex flex-col gap-1 rounded-md px-2 py-2 hover:bg-(--as-sunken)">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-sm font-semibold text-(--as-ink)">{n.title}</span>
+                  <span className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-(--as-ink)">
+                    {unread.has(n.id) && (
+                      <>
+                        <span aria-hidden className="size-1.5 shrink-0 self-center rounded-full bg-(--as-blue)" />
+                        <span className="sr-only">Unread:</span>
+                      </>
+                    )}
+                    {n.title}
+                  </span>
                   <span className="shrink-0 text-xs text-(--as-subtle)">{n.time}</span>
                 </div>
                 <span className="text-xs leading-snug text-(--as-muted)">{n.body}</span>

@@ -1,8 +1,8 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { comingSoon } from "@/lib/prototype"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   DropdownMenu,
@@ -177,12 +177,12 @@ export function Sidebar({ collapsed, onToggle, activeNav, onNavigate, query, onQ
           <DropdownMenuContent side="top" align="start" sideOffset={8} className={cn(popupClass, "w-[228px]")}>
             <DropdownMenuLabel className="px-2 py-1.5 text-xs text-(--as-subtle)">{USER.email}</DropdownMenuLabel>
             {["Profile", "Workspace settings", "Billing"].map((l) => (
-              <DropdownMenuItem key={l} className={menuItemClass} onClick={() => toast(`${l} isn't part of this prototype`)}>
+              <DropdownMenuItem key={l} className={menuItemClass} onClick={() => comingSoon(l)}>
                 {l}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator className="bg-(--as-line)" />
-            <DropdownMenuItem className={menuItemClass} onClick={() => toast("Signed out (not really — it's a prototype)")}>
+            <DropdownMenuItem className={menuItemClass} onClick={() => comingSoon("Sign out")}>
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
