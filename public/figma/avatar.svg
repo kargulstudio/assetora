@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="image">
+<g clip-path="url(#clip0_0_64)">
+<ellipse id="Body" cx="8" cy="15.6" rx="6.4" ry="4.8" fill="white" fill-opacity="0.72"/>
+<circle id="Head" opacity="0.9" cx="8" cy="6.4" r="3.2" fill="white"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_64">
+<rect width="16" height="16" rx="8" fill="white"/>
+</clipPath>
+</defs>
+</svg>

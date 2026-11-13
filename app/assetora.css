@@ -1,0 +1,91 @@
+/*
+ * Assetora — app tokens (Figma ZKxOvLKOz4VYG21iEqjG4l · node 1:17).
+ * Everything lives under `.assetora` so it never leaks into other routes.
+ * `.as-popup` repeats them for menus/popovers, which portal outside the wrapper.
+ */
+.assetora,
+.as-popup {
+  /* Palette (exact Figma values) */
+  --as-ink: #282828; /* titles, primary text, Export button */
+  --as-muted: #757575; /* body / labels */
+  --as-subtle: #a1a1a1; /* section labels, email */
+  --as-placeholder: #a8a8a8;
+  --as-line: #e7e7e7; /* section borders, dividers */
+  --as-ring: #ececec; /* control ring */
+  --as-sunken: #fafafa; /* KPI card header */
+  --as-blue: #1067ff;
+  --as-blue-2: #0059f5;
+  --as-orange: #ffa100;
+  --as-pink: #ec3672;
+  --as-green: #46c359;
+  --as-red: #f14c43;
+  --as-grey-avatar: #757575;
+  --as-nav-active: rgba(16, 103, 255, 0.07);
+  --as-nav-hover: rgba(9, 9, 11, 0.04);
+  --as-avatar-bg: #ebf2fc;
+
+  /* Elevation */
+  --as-shadow-control: 0px 1px 2px 0px rgba(40, 40, 40, 0.08), 0px 0px 0px 1px var(--as-ring);
+  --as-shadow-card: 0px 2px 4px 0px rgba(35, 35, 35, 0.03), 0px 1px 2px 0px rgba(35, 35, 35, 0.04),
+    0px 0px 0px 1px var(--as-line);
+  --as-shadow-chip: 0px 2px 4px 0px rgba(9, 9, 11, 0.16), 0px 1px 2px 0px rgba(9, 9, 11, 0.08);
+  --as-shadow-thumb: 0px 2px 8px 0px rgba(0, 0, 0, 0.16);
+  --as-glow: inset 0px 1px 20px 0px rgba(255, 255, 255, 0.16);
+
+  /* Layout */
+  --as-sidebar: 260px;
+  --as-sidebar-rail: 54px;
+
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "salt" 1;
+  letter-spacing: -0.02em;
+}
+
+.assetora {
+  color: var(--as-ink);
+  background: #ffffff;
+}
+
+/* KPI numbers use Geist (Figma: Geist SemiBold / Medium / Regular) */
+.assetora .as-geist {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Single-colour Figma icon tinted with currentColor (keeps the duotone alpha) */
+.assetora .as-mask {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-image: var(--as-icon);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 100% 100%;
+  -webkit-mask-image: var(--as-icon);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 100% 100%;
+}
+
+/* Coloured 30px / 10px chips (KPI icons, legend swatches, Export) */
+.assetora .as-chip {
+  position: relative;
+  border: 1px solid #ffffff;
+  background: var(--as-chip-color);
+  box-shadow: var(--as-shadow-chip), 0px 0px 0px 1px var(--as-chip-color);
+}
+.assetora .as-chip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--as-glow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assetora *,
+  .as-popup * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
