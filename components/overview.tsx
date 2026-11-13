@@ -7,7 +7,6 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { comingSoon } from "@/lib/prototype"
 import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { COMPARISON_LABEL, KPIS, type Comparison, type Kpi } from "@/lib/data"
 import { ColorChip, FigmaImg, controlClass, menuItemClass, popupClass } from "./primitives"
+import { AdaptivePopover } from "./sheet"
 
 export function formatRange(range: DateRange | undefined) {
   if (!range?.from) return "Pick dates"
@@ -40,7 +40,7 @@ export function Overview() {
   return (
     <section aria-labelledby="as-overview" className="flex flex-col gap-5 border-b border-(--as-line) bg-white px-4 py-5">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 max-md:basis-full">
           <h1 id="as-overview" className="text-base leading-[1.4] font-semibold tracking-[-0.32px] text-(--as-ink)">
             Overview
           </h1>
@@ -48,25 +48,41 @@ export function Overview() {
             Real-time insights and activity across your properties
           </p>
         </div>
-        <Popover>
-          <PopoverTrigger render={<button type="button" className={controlClass} aria-label="Overview date range" />}>
-            <FigmaImg name="calendar.svg" />
-            <span className="px-[2px] tracking-[-0.28px] whitespace-nowrap">{formatRange(range)}</span>
-          </PopoverTrigger>
-          <PopoverContent align="end" sideOffset={8} className={cn(popupClass, "w-auto p-2")}>
+        <AdaptivePopover
+          title="Date range"
+          className="w-auto p-2"
+          trigger={
+            <button type="button" className={controlClass} aria-label="Overview date range">
+              <FigmaImg name="calendar.svg" />
+              <span className="px-[2px] tracking-[-0.28px] whitespace-nowrap">{formatRange(range)}</span>
+            </button>
+          }
+        >
+          {(phone) => (
             <Calendar
               mode="range"
-              numberOfMonths={2}
+              numberOfMonths={phone ? 1 : 2}
               defaultMonth={range?.from}
               selected={range}
               onSelect={setRange}
-              className="bg-transparent p-0 [--cell-size:--spacing(8)]"
+              className={cn(
+                "bg-transparent p-0 [--cell-size:--spacing(8)]",
+                // phones: one month, 40px day cells, centred in the sheet
+                phone && "mx-auto [--cell-size:--spacing(10)]"
+              )}
             />
-          </PopoverContent>
-        </Popover>
+          )}
+        </AdaptivePopover>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      {/* 2-up / 4-up grid; on phones a horizontal snap-scroll row (cards are too narrow 2-up at 375px) */}
+      <div
+        className={cn(
+          "grid grid-cols-2 gap-3 xl:grid-cols-4",
+          "max-md:-mx-4 max-md:-my-1 max-md:flex max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 max-md:overflow-x-auto max-md:overscroll-x-contain max-md:px-4 max-md:py-1",
+          "max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden"
+        )}
+      >
         {KPIS.map((kpi) => (
           <KpiCard key={kpi.id} kpi={kpi} />
         ))}
@@ -81,7 +97,7 @@ function KpiCard({ kpi }: { kpi: Kpi }) {
   const deltaLabel = `${delta > 0 ? "+" : ""}${delta}%`
 
   return (
-    <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl bg-white shadow-(--as-shadow-card)">
+    <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl bg-white shadow-(--as-shadow-card) max-md:w-[min(78%,280px)] max-md:shrink-0 max-md:snap-start">
       <header className="flex items-center gap-3 border-b border-(--as-line) bg-(--as-sunken) p-4">
         <ColorChip color={kpi.color} className="size-[30px] rounded-lg">
           <FigmaImg name="cursor-click-01.svg" size={16} />
@@ -96,7 +112,7 @@ function KpiCard({ kpi }: { kpi: Kpi }) {
                 type="button"
                 aria-label={`${kpi.title} options`}
                 className={cn(
-                  "-m-1.5 flex size-[26px] cursor-pointer items-center justify-center rounded-md outline-none",
+                  "-m-1.5 flex size-[26px] cursor-pointer max-md:-m-[13px] max-md:size-10 items-center justify-center rounded-md outline-none",
                   "transition-[background-color] duration-[120ms] ease-[cubic-bezier(0.23,1,0.32,1)]",
                   "[@media(hover:hover)]:hover:bg-[rgba(9,9,11,0.05)] data-popup-open:bg-[rgba(9,9,11,0.05)]",
                   "focus-visible:outline-2 focus-visible:outline-[rgba(16,103,255,0.45)]"

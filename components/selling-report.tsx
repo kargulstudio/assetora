@@ -48,6 +48,8 @@ export function SellingReport() {
   const colPct = 100 / months
   const leftPct = (i: number) => (i - start) * colPct
 
+  // Mouse hover and touch drag share one handler. `touch-pan-y` keeps vertical page
+  // scrolling native while a horizontal drag moves the crosshair.
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = Math.min(Math.max(e.clientX - rect.left, 0), rect.width - 1)
@@ -73,10 +75,11 @@ export function SellingReport() {
     <section aria-labelledby="as-selling-report" className="flex flex-col gap-6 border-b border-(--as-line) bg-white px-4 py-5">
       {/* Header — 1:293 */}
       <div className="flex flex-wrap items-center gap-2">
-        <h2 id="as-selling-report" className="text-base leading-[1.4] font-semibold tracking-[-0.32px] whitespace-nowrap text-(--as-ink)">
+        <h2 id="as-selling-report" className="text-base leading-[1.4] font-semibold tracking-[-0.32px] whitespace-nowrap text-(--as-ink) max-md:flex-1">
           Selling report
         </h2>
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-4">
+        {/* phones: title + period on row 1, legend + compare switch on row 2 */}
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-4 max-md:order-1 max-md:flex-none max-md:justify-start">
           <span className="flex items-center gap-1.5 text-sm leading-none font-medium tracking-[-0.28px] whitespace-nowrap text-(--as-muted)">
             <ColorChip color="var(--as-blue)" className="size-2.5 rounded-[3px]" />
             This year
@@ -86,7 +89,7 @@ export function SellingReport() {
             onClick={() => setCompare((v) => !v)}
             aria-pressed={compare}
             className={cn(
-              "flex cursor-pointer items-center gap-1.5 rounded text-sm leading-none font-medium tracking-[-0.28px] whitespace-nowrap text-(--as-muted) outline-none",
+              "flex cursor-pointer items-center gap-1.5 rounded text-sm leading-none font-medium tracking-[-0.28px] whitespace-nowrap text-(--as-muted) outline-none max-md:min-h-10",
               "transition-opacity duration-200",
               EASE,
               !compare && "opacity-45",
@@ -115,11 +118,12 @@ export function SellingReport() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <VRule />
+        <VRule className="max-md:hidden" />
 
-        <label className="flex cursor-pointer items-center gap-1.5 py-[5px]">
+        <label className="flex cursor-pointer items-center gap-1.5 py-[5px] max-md:order-2 max-md:ml-auto max-md:min-h-10">
           <span className="px-[2px] text-sm leading-none font-medium tracking-[-0.28px] whitespace-nowrap text-(--as-muted)">
-            Compare to previous period
+            <span className="max-md:hidden">Compare to previous period</span>
+            <span className="md:hidden">Compare</span>
           </span>
           <FigmaToggle checked={compare} onCheckedChange={setCompare} />
         </label>
@@ -131,11 +135,13 @@ export function SellingReport() {
           role="img"
           tabIndex={0}
           aria-label={`Units sold per month, ${THIS_YEAR}${compare ? ` vs ${PREV_YEAR}` : ""}. Use arrow keys to inspect months.`}
+          onPointerDown={onPointerMove}
           onPointerMove={onPointerMove}
-          onPointerLeave={() => setHover(null)}
+          // a lifted finger keeps the crosshair so the values stay readable; tapping elsewhere blurs it away
+          onPointerLeave={(e) => e.pointerType === "mouse" && setHover(null)}
           onKeyDown={onKeyDown}
           onBlur={() => setHover(null)}
-          className="relative w-full cursor-crosshair touch-pan-y outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[rgba(16,103,255,0.45)]"
+          className="relative w-full cursor-crosshair touch-pan-y outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[rgba(16,103,255,0.45)] [--chip-inset:0px] max-md:[--chip-inset:36px]"
           style={{ height: CHART_H }}
         >
           {/* vertical dashed grid (1:321) */}
@@ -215,14 +221,14 @@ export function SellingReport() {
                   year={THIS_YEAR}
                   value={SOLD_THIS_YEAR[i]}
                   color="var(--as-blue)"
-                  style={{ left: `${leftPct(i) + colPct / 2}%`, top: 6 }}
+                  style={{ left: chipLeft(leftPct(i) + colPct / 2), top: 6 }}
                 />
                 {compare && (
                   <ValueChip
                     year={PREV_YEAR}
                     value={SOLD_PREV_YEAR[i]}
                     color="var(--as-orange)"
-                    style={{ left: `${leftPct(i) + colPct / 2}%`, top: CHART_H - 36 }}
+                    style={{ left: chipLeft(leftPct(i) + colPct / 2), top: CHART_H - 36 }}
                   />
                 )}
               </div>
@@ -230,7 +236,7 @@ export function SellingReport() {
         </div>
 
         {/* Month axis — 1:373 */}
-        <div className="flex text-center text-sm leading-none font-medium tracking-[-0.28px]">
+        <div className="flex text-center text-sm leading-none font-medium tracking-[-0.28px] max-md:text-xs">
           {visible.map((i) => (
             <p
               key={MONTHS[i]}
@@ -239,7 +245,8 @@ export function SellingReport() {
                 i === low ? "text-(--as-red)" : i === high ? "text-(--as-green)" : hover?.index === i ? "text-(--as-ink)" : "text-(--as-muted)"
               )}
             >
-              {MONTHS[i]}
+              <span className="max-md:hidden">{MONTHS[i]}</span>
+              <span className="md:hidden">{MONTHS[i].slice(0, 3)}</span>
             </p>
           ))}
         </div>
@@ -248,13 +255,16 @@ export function SellingReport() {
   )
 }
 
+/** Keeps edge chips inside the chart on phones (inset is 0 on desktop, so it's a no-op there). */
+const chipLeft = (pct: number) => `clamp(var(--chip-inset), ${pct}%, calc(100% - var(--chip-inset)))`
+
 function ValueChip({ year, value, color, style }: { year: number; value: number; color: string; style: CSSProperties }) {
   return (
     <div
-      className="absolute flex w-[116px] -translate-x-1/2 items-center justify-center gap-1 rounded-lg bg-white p-2 text-sm leading-none font-medium tracking-[-0.28px] whitespace-nowrap shadow-(--as-shadow-control)"
+      className="absolute flex w-[116px] -translate-x-1/2 items-center max-md:w-auto justify-center gap-1 rounded-lg bg-white p-2 text-sm leading-none font-medium tracking-[-0.28px] whitespace-nowrap shadow-(--as-shadow-control)"
       style={style}
     >
-      <span className="text-(--as-muted)">{year}:</span>
+      <span className="text-(--as-muted) max-md:hidden">{year}:</span>
       <span style={{ color }}>{value} sold</span>
     </div>
   )

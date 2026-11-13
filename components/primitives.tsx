@@ -83,7 +83,7 @@ export function VRule({ className }: { className?: string }) {
 
 /** Shared look of every white Figma control (search, Annually, States, Date range…). */
 export const controlClass = cn(
-  "inline-flex h-[30px] shrink-0 cursor-pointer items-center gap-1 rounded-lg bg-white p-2 text-sm leading-none font-medium text-(--as-muted) shadow-(--as-shadow-control) outline-none select-none",
+  "inline-flex h-[30px] shrink-0 cursor-pointer items-center gap-1 rounded-lg bg-white p-2 max-md:h-10 max-md:px-3 text-sm leading-none font-medium text-(--as-muted) shadow-(--as-shadow-control) outline-none select-none",
   "transition-[background-color,box-shadow,color] duration-[120ms] ease-[cubic-bezier(0.23,1,0.32,1)]",
   "[@media(hover:hover)]:hover:bg-(--as-sunken) active:bg-[#f5f5f5] data-popup-open:bg-(--as-sunken)",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]"
@@ -94,4 +94,4 @@ export const popupClass =
   "as-popup rounded-xl bg-white p-1 text-sm text-(--as-ink) shadow-[0px_8px_24px_-4px_rgba(9,9,11,0.12),0px_2px_4px_0px_rgba(9,9,11,0.06),0px_0px_0px_1px_#ececec] ring-0"
 
 export const menuItemClass =
-  "cursor-pointer rounded-md px-2 py-1.5 text-sm font-medium text-(--as-muted) focus:bg-(--as-sunken) focus:text-(--as-ink)"
+  "cursor-pointer rounded-md px-2 py-1.5 max-md:py-2.5 text-sm font-medium text-(--as-muted) focus:bg-(--as-sunken) focus:text-(--as-ink)"

@@ -5,6 +5,7 @@ import { differenceInCalendarDays, isWithinInterval, parseISO, endOfDay, startOf
 import { toast } from "sonner"
 import { comingSoon } from "@/lib/prototype"
 import { BREAKPOINTS, useMediaQuery } from "@/lib/use-media-query"
+import { cn } from "@/lib/utils"
 import { DATE_PRESETS, SALES, TODAY, type NavItem, type Sale } from "@/lib/data"
 import { Sidebar } from "./sidebar"
 import { TopBar } from "./top-bar"
@@ -16,21 +17,27 @@ const DEFAULT_FILTERS: HistoryFilters = { state: "all", preset: "all", custom: u
 
 /** Assetora — Figma ZKxOvLKOz4VYG21iEqjG4l, node 1:17 ("Property Management", 1440×1024). */
 export function AssetoraDashboard() {
+  // ≥ lg (1024px): docked sidebar that collapses to an icon rail.
+  // < lg: the sidebar is an off-canvas drawer opened from the top bar.
   const isDesktop = useMediaQuery(BREAKPOINTS.lg, true)
-  // null = follow the breakpoint (rail below 1024px); a click pins the user's choice
-  const [userCollapsed, setUserCollapsed] = useState<boolean | null>(null)
-  const collapsed = userCollapsed ?? !isDesktop
-  // Keyboard toggles skip the animation, and so does following the breakpoint
-  // (no collapse animation on first paint of a narrow window).
-  const [keyboardToggle, setKeyboardToggle] = useState(false)
-  const instant = userCollapsed === null || keyboardToggle
+  const [collapsed, setCollapsed] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  // true when the last toggle came from the keyboard → skip the animation
+  const [instant, setInstant] = useState(false)
+  const mobileOpen = drawerOpen && !isDesktop
+
   const toggleSidebar = useCallback(
     (fromKeyboard = false) => {
-      setKeyboardToggle(fromKeyboard)
-      setUserCollapsed(!collapsed)
+      setInstant(fromKeyboard)
+      if (isDesktop) setCollapsed((c) => !c)
+      else setDrawerOpen((o) => !o)
     },
-    [collapsed]
+    [isDesktop]
   )
+  const closeDrawer = useCallback((fromKeyboard = false) => {
+    setInstant(fromKeyboard)
+    setDrawerOpen(false)
+  }, [])
 
   const [activeNav, setActiveNav] = useState("home")
   const [query, setQuery] = useState("")
@@ -43,10 +50,12 @@ export function AssetoraDashboard() {
         e.preventDefault()
         toggleSidebar(true)
       }
+      if (e.key === "Escape" && mobileOpen) closeDrawer(true)
     }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [toggleSidebar])
+    // capture phase: a focused tooltip trigger inside the drawer would otherwise swallow Esc
+    window.addEventListener("keydown", onKey, true)
+    return () => window.removeEventListener("keydown", onKey, true)
+  }, [toggleSidebar, closeDrawer, mobileOpen])
 
   const rows = useMemo(() => filterSales(SALES, query, filters, sort), [query, filters, sort])
 
@@ -78,17 +87,32 @@ export function AssetoraDashboard() {
   return (
     <div className="assetora flex h-dvh w-full overflow-hidden">
       <Sidebar
-        collapsed={collapsed}
+        collapsed={collapsed && isDesktop}
         instant={instant}
+        isDesktop={isDesktop}
+        mobileOpen={mobileOpen}
         onToggle={() => toggleSidebar()}
+        onCloseMobile={() => closeDrawer()}
         activeNav={activeNav}
         onNavigate={onNavigate}
         query={query}
         onQuery={setQuery}
       />
-      <div className="flex h-full min-w-0 flex-1 flex-col overflow-y-auto">
+
+      {/* Drawer scrim (< lg only) */}
+      <div
+        aria-hidden
+        onClick={() => closeDrawer()}
+        className={cn(
+          "fixed inset-0 z-40 bg-(--bg-overlay) transition-opacity duration-300 ease-drawer lg:hidden",
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          instant && "transition-none"
+        )}
+      />
+
+      <div inert={mobileOpen} className="flex h-full min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
         <div className="sticky top-0 z-10">
-          <TopBar query={query} onQuery={setQuery} onExport={onExport} />
+          <TopBar query={query} onQuery={setQuery} onExport={onExport} onOpenMenu={() => toggleSidebar()} />
         </div>
         <main className="flex flex-1 flex-col">
           <Overview />

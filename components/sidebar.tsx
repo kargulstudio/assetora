@@ -1,6 +1,6 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useEffect, useRef, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { comingSoon } from "@/lib/prototype"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -25,24 +25,63 @@ type SidebarProps = {
   collapsed: boolean
   /** true when the last toggle came from the keyboard → skip the animation */
   instant: boolean
+  /** ≥1024px: docked rail. Below: off-canvas drawer. */
+  isDesktop: boolean
+  mobileOpen: boolean
   onToggle: () => void
+  onCloseMobile: () => void
   activeNav: string
   onNavigate: (item: NavItem) => void
   query: string
   onQuery: (q: string) => void
 }
 
-/** Figma 1:19 — 260px rail, white, 1px #E7E7E7 right border. Collapses to a 54px icon rail. */
-export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, query, onQuery }: SidebarProps) {
+/**
+ * Figma 1:19 — 260px rail, white, 1px #E7E7E7 right border.
+ * ≥ lg it's docked and collapses to a 54px icon rail; below lg it's an off-canvas drawer.
+ */
+export function Sidebar({
+  collapsed,
+  instant,
+  isDesktop,
+  mobileOpen,
+  onToggle,
+  onCloseMobile,
+  activeNav,
+  onNavigate,
+  query,
+  onQuery,
+}: SidebarProps) {
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  // Move focus into the drawer when it opens so keyboard and screen-reader users land inside it
+  useEffect(() => {
+    if (mobileOpen) toggleRef.current?.focus({ preventScroll: true })
+  }, [mobileOpen])
+
+  // On the drawer, picking anything also closes it so the result is visible
+  const pick = (fn: () => void) => () => {
+    fn()
+    if (!isDesktop) onCloseMobile()
+  }
+
   return (
     <aside
       aria-label="Sidebar"
       data-collapsed={collapsed || undefined}
       data-instant={instant || undefined}
+      data-mobile-open={mobileOpen || undefined}
+      // the off-screen drawer must not be reachable by Tab / screen readers
+      inert={!isDesktop && !mobileOpen}
       className={cn(
-        "group/sb relative z-20 flex h-full shrink-0 flex-col overflow-hidden border-r border-(--as-line) bg-white",
+        "group/sb flex h-full shrink-0 flex-col overflow-hidden border-r border-(--as-line) bg-white",
         "w-(--as-sidebar) data-collapsed:w-(--as-sidebar-rail)",
-        "transition-[width] duration-(--duration-slow) ease-out-strong data-instant:transition-none"
+        // < lg: off-canvas drawer on the iOS-style drawer curve
+        "fixed inset-y-0 left-0 z-50 -translate-x-full data-mobile-open:translate-x-0",
+        "data-mobile-open:shadow-[16px_0_48px_-8px_rgba(9,9,11,0.24)]",
+        "transition-[translate,box-shadow] duration-300 ease-drawer",
+        // ≥ lg: docked rail; only the width animates (collapse)
+        "lg:relative lg:z-20 lg:translate-x-0 lg:shadow-none lg:transition-[width] lg:duration-(--duration-slow) lg:ease-out-strong",
+        "data-instant:transition-none lg:data-instant:transition-none"
       )}
     >
       {/* Brand — 1:20. The logo always stays; only the wordmark fades. */}
@@ -80,11 +119,14 @@ export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, q
           <TooltipTrigger
             render={
               <button
+                ref={toggleRef}
                 type="button"
-                onClick={onToggle}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-expanded={!collapsed}
+                onClick={isDesktop ? onToggle : onCloseMobile}
+                aria-label={!isDesktop ? "Close menu" : collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-expanded={isDesktop ? !collapsed : undefined}
                 className={cn(
+                  // < lg: 40px hit area around the 30px button
+                  "relative after:absolute after:-inset-[5px] lg:after:hidden",
                   "flex size-[30px] cursor-pointer items-center justify-center rounded-lg bg-white shadow-(--as-shadow-control) outline-none",
                   "transition-[background-color] duration-[120ms] ease-out-strong",
                   "[@media(hover:hover)]:hover:bg-(--as-sunken) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]"
@@ -95,7 +137,7 @@ export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, q
             <FigmaImg name="align-left-01.svg" className={cn("transition-transform", MOVE, collapsed && "-scale-x-100")} />
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={8} className="as-popup">
-            {collapsed ? "Expand" : "Collapse"} sidebar · ⌘B
+            {!isDesktop ? "Close menu" : `${collapsed ? "Expand" : "Collapse"} sidebar`} · ⌘B
           </TooltipContent>
         </Tooltip>
       </div>
@@ -110,7 +152,7 @@ export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, q
               label={item.label}
               active={activeNav === item.id}
               icon={<MaskIcon name={item.icon} />}
-              onClick={() => onNavigate(item)}
+              onClick={pick(() => onNavigate(item))}
             />
           ))}
         </Section>
@@ -124,7 +166,7 @@ export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, q
               label={item.label}
               active={activeNav === item.id}
               icon={<MaskIcon name={item.icon} />}
-              onClick={() => onNavigate(item)}
+              onClick={pick(() => onNavigate(item))}
             />
           ))}
         </Section>
@@ -139,7 +181,7 @@ export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, q
               compact
               selected={query === a.name}
               icon={<PersonAvatar color={a.color} />}
-              onClick={() => onQuery(query === a.name ? "" : a.name)}
+              onClick={pick(() => onQuery(query === a.name ? "" : a.name))}
             />
           ))}
         </Section>
@@ -153,7 +195,7 @@ export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, q
               label={p.name}
               selected={query === p.query}
               icon={<FigmaImg name={p.icon} />}
-              onClick={() => onQuery(query === p.query ? "" : p.query)}
+              onClick={pick(() => onQuery(query === p.query ? "" : p.query))}
             />
           ))}
         </Section>
@@ -300,10 +342,11 @@ function NavRow({
                 "group-data-instant/sb:[transition-property:background-color,color]",
                 "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]",
                 active
-                  ? "-mx-3 w-(--as-sidebar) gap-1 bg-(--as-nav-active) px-5 py-2.5 font-semibold text-(--as-ink) [&_.as-mask]:text-(--as-blue)"
+                  ? "-mx-3 w-(--as-sidebar) gap-1 bg-(--as-nav-active) px-5 py-2.5 font-semibold max-lg:py-[13px] text-(--as-ink) [&_.as-mask]:text-(--as-blue)"
                   : cn(
                       "w-full rounded-lg font-medium text-(--as-muted) group-data-collapsed/sb:w-[30px]",
-                      compact ? "gap-[5px] px-[7px] py-[9px]" : "gap-1.5 px-2 py-2.5",
+                      // < lg (drawer, touch) rows grow to 40px
+                      compact ? "gap-[5px] px-[7px] py-[9px] max-lg:py-3" : "gap-1.5 px-2 py-2.5 max-lg:py-[13px]",
                       "[@media(hover:hover)]:hover:bg-(--as-nav-hover) [@media(hover:hover)]:hover:text-(--as-ink)",
                       selected && "bg-(--as-nav-active) text-(--as-ink) [@media(hover:hover)]:hover:bg-(--as-nav-active)"
                     )
