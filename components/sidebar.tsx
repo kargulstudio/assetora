@@ -15,10 +15,16 @@ import {
 import { AGENTS, DATA_MENU, MAIN_MENU, PINNED, USER, type NavItem } from "@/lib/data"
 import { FigmaImg, MaskIcon, PersonAvatar, menuItemClass, popupClass } from "./primitives"
 
-const EASE = "duration-[250ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+/** Geometry (rail width, toggle glide, slots) moves on the slow curve; keyboard toggles skip it. */
+const MOVE = "duration-(--duration-slow) ease-out-strong group-data-instant/sb:transition-none"
+/** Labels only fade, a touch faster than the geometry so they're gone before the rail narrows. */
+const FADE =
+  "transition-opacity duration-(--duration-fast) ease-out-strong group-data-collapsed/sb:opacity-0 group-data-instant/sb:transition-none"
 
 type SidebarProps = {
   collapsed: boolean
+  /** true when the last toggle came from the keyboard → skip the animation */
+  instant: boolean
   onToggle: () => void
   activeNav: string
   onNavigate: (item: NavItem) => void
@@ -27,30 +33,49 @@ type SidebarProps = {
 }
 
 /** Figma 1:19 — 260px rail, white, 1px #E7E7E7 right border. Collapses to a 54px icon rail. */
-export function Sidebar({ collapsed, onToggle, activeNav, onNavigate, query, onQuery }: SidebarProps) {
+export function Sidebar({ collapsed, instant, onToggle, activeNav, onNavigate, query, onQuery }: SidebarProps) {
   return (
     <aside
       aria-label="Sidebar"
       data-collapsed={collapsed || undefined}
+      data-instant={instant || undefined}
       className={cn(
         "group/sb relative z-20 flex h-full shrink-0 flex-col overflow-hidden border-r border-(--as-line) bg-white",
         "w-(--as-sidebar) data-collapsed:w-(--as-sidebar-rail)",
-        "transition-[width]",
-        EASE
+        "transition-[width] duration-(--duration-slow) ease-out-strong data-instant:transition-none"
       )}
     >
-      {/* Brand — 1:20 */}
-      <div className="relative flex h-[63px] w-(--as-sidebar) shrink-0 items-center border-b border-(--as-line) p-4">
-        <div
-          className={cn(
-            "flex items-center gap-2 transition-opacity group-data-collapsed/sb:pointer-events-none group-data-collapsed/sb:opacity-0",
-            EASE
-          )}
-        >
-          <FigmaImg name="logo.svg" width={32} height={24} alt="" />
-          <span className="text-base leading-none font-semibold tracking-[-0.32px] text-(--as-ink)">Assetora</span>
+      {/* Brand — 1:20. The logo always stays; only the wordmark fades. */}
+      <div className="flex h-[63px] w-(--as-sidebar) shrink-0 items-center border-b border-(--as-line) p-4">
+        <div className="flex items-center gap-2">
+          <FigmaImg
+            name="logo.svg"
+            width={32}
+            height={24}
+            alt="Assetora"
+            // nudge 5px so the 32px mark centres on the 54px rail (same axis as the nav icons)
+            className={cn("transition-transform group-data-collapsed/sb:-translate-x-[5px]", MOVE)}
+          />
+          <span aria-hidden className={cn("text-base leading-none font-semibold tracking-[-0.32px] text-(--as-ink)", FADE)}>
+            Assetora
+          </span>
         </div>
-        {/* Toggle glides between the brand row (x 214) and the centre of the rail (x 12). */}
+      </div>
+
+      {/*
+        Sidebar toggle. One element that glides between two slots:
+          expanded  → right end of the brand row   (x 214, y 16)
+          collapsed → under the logo, top of nav   (x 12,  y 75)
+        Only `transform` animates, in step with the rail's width.
+      */}
+      <div
+        className={cn(
+          "absolute top-0 left-0 z-20 translate-x-[214px] translate-y-4",
+          "group-data-collapsed/sb:translate-x-3 group-data-collapsed/sb:translate-y-[75px]",
+          "transition-transform",
+          MOVE
+        )}
+      >
         <Tooltip>
           <TooltipTrigger
             render={
@@ -60,19 +85,14 @@ export function Sidebar({ collapsed, onToggle, activeNav, onNavigate, query, onQ
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 aria-expanded={!collapsed}
                 className={cn(
-                  "absolute top-4 left-0 flex size-[30px] cursor-pointer items-center justify-center rounded-lg bg-white shadow-(--as-shadow-control) outline-none",
-                  "translate-x-[214px] group-data-collapsed/sb:translate-x-3",
-                  "transition-[translate,background-color]",
-                  EASE,
+                  "flex size-[30px] cursor-pointer items-center justify-center rounded-lg bg-white shadow-(--as-shadow-control) outline-none",
+                  "transition-[background-color] duration-[120ms] ease-out-strong",
                   "[@media(hover:hover)]:hover:bg-(--as-sunken) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]"
                 )}
               />
             }
           >
-            <FigmaImg
-              name="align-left-01.svg"
-              className={cn("transition-transform", EASE, collapsed && "-scale-x-100")}
-            />
+            <FigmaImg name="align-left-01.svg" className={cn("transition-transform", MOVE, collapsed && "-scale-x-100")} />
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={8} className="as-popup">
             {collapsed ? "Expand" : "Collapse"} sidebar · ⌘B
@@ -81,8 +101,8 @@ export function Sidebar({ collapsed, onToggle, activeNav, onNavigate, query, onQ
       </div>
 
       <nav aria-label="Main" className="flex min-h-0 w-(--as-sidebar) flex-1 flex-col overflow-x-hidden overflow-y-auto [scrollbar-width:none]">
-        {/* Main menu — 1:29 */}
-        <Section label="Main menu">
+        {/* Main menu — 1:29. Opens a slot for the toggle when the rail is collapsed. */}
+        <Section label="Main menu" toggleSlot>
           {MAIN_MENU.map((item) => (
             <NavRow
               key={item.id}
@@ -139,41 +159,50 @@ export function Sidebar({ collapsed, onToggle, activeNav, onNavigate, query, onQ
         </Section>
       </nav>
 
-      {/* User — 1:156 */}
+      {/* User — 1:156. Collapses to just the avatar. */}
       <div
         className={cn(
           "w-(--as-sidebar) shrink-0 border-b border-(--as-line) p-4 transition-[padding] group-data-collapsed/sb:px-[9px]",
-          EASE
+          MOVE
         )}
       >
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label={`Account: ${USER.name}`}
-                className={cn(
-                  "flex w-full cursor-pointer items-center gap-1 rounded-lg bg-white p-2 text-left shadow-(--as-shadow-control) outline-none",
-                  "transition-[background-color,box-shadow,padding]",
-                  EASE,
-                  "[@media(hover:hover)]:hover:bg-(--as-sunken) data-popup-open:bg-(--as-sunken)",
-                  "group-data-collapsed/sb:p-0 group-data-collapsed/sb:shadow-none group-data-collapsed/sb:hover:bg-transparent",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]"
-                )}
-              />
-            }
-          >
-            <span className="flex min-w-0 flex-1 items-center gap-2.5">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-(--as-avatar-bg) text-sm leading-none font-medium tracking-[-0.21px] text-(--as-blue) shadow-(--as-shadow-control)">
-                {USER.initials}
+          <Tooltip disabled={!collapsed}>
+            <TooltipTrigger
+              render={
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      aria-label={`Account: ${USER.name}`}
+                      className={cn(
+                        "flex w-full cursor-pointer items-center gap-1 rounded-lg bg-white p-2 text-left shadow-(--as-shadow-control) outline-none",
+                        "transition-[background-color,box-shadow,padding]",
+                        MOVE,
+                        "[@media(hover:hover)]:hover:bg-(--as-sunken) data-popup-open:bg-(--as-sunken)",
+                        "group-data-collapsed/sb:p-0 group-data-collapsed/sb:shadow-none group-data-collapsed/sb:hover:bg-transparent",
+                        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]"
+                      )}
+                    />
+                  }
+                />
+              }
+            >
+              <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-(--as-avatar-bg) text-sm leading-none font-medium tracking-[-0.21px] text-(--as-blue) shadow-(--as-shadow-control)">
+                  {USER.initials}
+                </span>
+                <span className={cn("flex min-w-0 flex-col justify-center gap-[5px] leading-none font-medium whitespace-nowrap", FADE)}>
+                  <span className="text-sm tracking-[-0.21px] text-(--as-ink)">{USER.name}</span>
+                  <span className="text-xs tracking-[-0.12px] text-(--as-subtle)">{USER.email}</span>
+                </span>
               </span>
-              <span className="flex min-w-0 flex-col justify-center gap-[5px] leading-none font-medium whitespace-nowrap">
-                <span className="text-sm tracking-[-0.21px] text-(--as-ink)">{USER.name}</span>
-                <span className="text-xs tracking-[-0.12px] text-(--as-subtle)">{USER.email}</span>
-              </span>
-            </span>
-            <FigmaImg name="chevron-selector-vertical.svg" />
-          </DropdownMenuTrigger>
+              <FigmaImg name="chevron-selector-vertical.svg" className={FADE} />
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={10} className="as-popup">
+              {USER.name}
+            </TooltipContent>
+          </Tooltip>
           <DropdownMenuContent side="top" align="start" sideOffset={8} className={cn(popupClass, "w-[228px]")}>
             <DropdownMenuLabel className="px-2 py-1.5 text-xs text-(--as-subtle)">{USER.email}</DropdownMenuLabel>
             {["Profile", "Workspace settings", "Billing"].map((l) => (
@@ -192,17 +221,41 @@ export function Sidebar({ collapsed, onToggle, activeNav, onNavigate, query, onQ
   )
 }
 
-function Section({ label, children, grow }: { label: string; children: ReactNode; grow?: boolean }) {
+function Section({
+  label,
+  children,
+  grow,
+  toggleSlot,
+}: {
+  label: string
+  children: ReactNode
+  grow?: boolean
+  /** opens a 30px + 8px slot for the sidebar toggle when the rail is collapsed */
+  toggleSlot?: boolean
+}) {
   return (
     <div className={cn("flex flex-col border-b border-(--as-line) p-3", grow && "flex-1")}>
-      <p
+      {/* Heading folds away on the rail (grid-rows: height-auto collapse, no JS measuring) */}
+      <div
         className={cn(
-          "p-2 text-xs leading-none font-medium tracking-[-0.24px] whitespace-nowrap text-(--as-subtle) transition-opacity group-data-collapsed/sb:opacity-0",
-          EASE
+          "grid grid-rows-[1fr] transition-[grid-template-rows,opacity] group-data-collapsed/sb:grid-rows-[0fr] group-data-collapsed/sb:opacity-0",
+          MOVE
         )}
       >
-        {label}
-      </p>
+        <div className="min-h-0 overflow-hidden">
+          <p className="p-2 text-xs leading-none font-medium tracking-[-0.24px] whitespace-nowrap text-(--as-subtle)">{label}</p>
+        </div>
+      </div>
+      {toggleSlot && (
+        <div
+          aria-hidden
+          className={cn("grid grid-rows-[0fr] transition-[grid-template-rows] group-data-collapsed/sb:grid-rows-[1fr]", MOVE)}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="h-[38px]" />
+          </div>
+        </div>
+      )}
       <ul className="flex flex-col">{children}</ul>
     </div>
   )
@@ -242,7 +295,9 @@ function NavRow({
               aria-label={collapsed ? label : undefined}
               className={cn(
                 "flex cursor-pointer items-center text-left text-sm leading-none tracking-[-0.28px] whitespace-nowrap outline-none",
-                "transition-[background-color,color] duration-[120ms] ease-[cubic-bezier(0.23,1,0.32,1)]",
+                // colours answer hover fast; the 30px rail pill narrows in step with the rail
+                "[transition:background-color_120ms_var(--ease-out),color_120ms_var(--ease-out),width_var(--duration-slow)_var(--ease-out)]",
+                "group-data-instant/sb:[transition-property:background-color,color]",
                 "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[rgba(16,103,255,0.45)]",
                 active
                   ? "-mx-3 w-(--as-sidebar) gap-1 bg-(--as-nav-active) px-5 py-2.5 font-semibold text-(--as-ink) [&_.as-mask]:text-(--as-blue)"
@@ -257,14 +312,7 @@ function NavRow({
           }
         >
           {icon}
-          <span
-            className={cn(
-              "min-w-0 flex-1 truncate px-[2px] transition-opacity group-data-collapsed/sb:opacity-0",
-              EASE
-            )}
-          >
-            {label}
-          </span>
+          <span className={cn("min-w-0 flex-1 truncate px-[2px]", FADE)}>{label}</span>
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={10} className="as-popup">
           {label}

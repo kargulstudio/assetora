@@ -20,7 +20,17 @@ export function AssetoraDashboard() {
   // null = follow the breakpoint (rail below 1024px); a click pins the user's choice
   const [userCollapsed, setUserCollapsed] = useState<boolean | null>(null)
   const collapsed = userCollapsed ?? !isDesktop
-  const toggleSidebar = useCallback(() => setUserCollapsed(!collapsed), [collapsed])
+  // Keyboard toggles skip the animation, and so does following the breakpoint
+  // (no collapse animation on first paint of a narrow window).
+  const [keyboardToggle, setKeyboardToggle] = useState(false)
+  const instant = userCollapsed === null || keyboardToggle
+  const toggleSidebar = useCallback(
+    (fromKeyboard = false) => {
+      setKeyboardToggle(fromKeyboard)
+      setUserCollapsed(!collapsed)
+    },
+    [collapsed]
+  )
 
   const [activeNav, setActiveNav] = useState("home")
   const [query, setQuery] = useState("")
@@ -31,7 +41,7 @@ export function AssetoraDashboard() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
         e.preventDefault()
-        toggleSidebar()
+        toggleSidebar(true)
       }
     }
     window.addEventListener("keydown", onKey)
@@ -69,7 +79,8 @@ export function AssetoraDashboard() {
     <div className="assetora flex h-dvh w-full overflow-hidden">
       <Sidebar
         collapsed={collapsed}
-        onToggle={toggleSidebar}
+        instant={instant}
+        onToggle={() => toggleSidebar()}
         activeNav={activeNav}
         onNavigate={onNavigate}
         query={query}
