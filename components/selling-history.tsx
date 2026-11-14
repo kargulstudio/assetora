@@ -200,8 +200,12 @@ export function SellingHistory({
         {rows.length === 0 && <EmptyState filtered={filtered} onReset={onReset} />}
       </ul>
 
-      {/* Table — 1:413. Scrolls sideways on tablets with the property column pinned. */}
-      <div className="max-md:hidden">
+      {/*
+        Table — 1:413. Scrolls sideways on tablets with the property column pinned.
+        The scroll container is pulled out 16px each side and padded back, so the
+        thumbnails' shadows aren't clipped at its edge (the table itself doesn't move).
+      */}
+      <div className="max-md:hidden [&>[data-slot=table-container]]:-mx-4 [&>[data-slot=table-container]]:w-[calc(100%+2rem)] [&>[data-slot=table-container]]:px-4">
       <Table className="min-w-[860px] table-fixed border-collapse text-sm leading-none tracking-[-0.28px]">
         <colgroup>
           <col className="w-[352px]" />
