@@ -69,7 +69,8 @@
 /* Coloured 30px / 10px chips (KPI icons, legend swatches, Export) */
 .assetora .as-chip {
   position: relative;
-  border: 1px solid #ffffff;
+  /* Figma's inner stroke is a faint highlight, not an opaque white ring */
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: var(--as-chip-color);
   box-shadow: var(--as-shadow-chip), 0px 0px 0px 1px var(--as-chip-color);
 }
