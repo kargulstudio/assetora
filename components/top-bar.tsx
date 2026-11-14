@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { comingSoon } from "@/lib/prototype"
 import { NOTIFICATIONS } from "@/lib/data"
 import { AdaptivePopover } from "./sheet"
 import { FigmaImg, VRule, controlClass } from "./primitives"
@@ -190,7 +189,6 @@ export function TopBar({
               )}
               <button
                 type="button"
-                onClick={() => comingSoon("Support chat")}
                 className="w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-sm font-medium text-(--as-muted) hover:bg-(--as-sunken) hover:text-(--as-ink) max-md:py-3"
               >
                 Contact support

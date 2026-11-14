@@ -32,7 +32,7 @@ Other scripts: `pnpm build` · `pnpm start` · `pnpm lint`
 - **Chart**: hover or arrow keys show a crosshair with sold counts. *Annually* switches to the last 6 months or last quarter, and the compare toggle (or legend) hides last year's line
 - **Table**: filter by state or date range, sort by sold date or price, with an empty state when nothing matches
 - **Notifications**: *Mark all as read* clears the unread dots
-- **Not built yet**: other nav items, account menu items, KPI details and support chat show a "… is coming soon" toast (`comingSoon()` in `lib/prototype.ts`)
+- **Not built yet**: other nav items, account menu items, KPI details and support chat do nothing
 
 ## Stack
 
@@ -53,6 +53,5 @@ Other scripts: `pnpm build` · `pnpm start` · `pnpm lint`
 | [`components/selling-history.tsx`](components/selling-history.tsx) | Selling history table with filters and sorting |
 | [`components/primitives.tsx`](components/primitives.tsx) | Small shared pieces (Figma icon, avatar, menu button) |
 | [`components/sheet.tsx`](components/sheet.tsx) | Bottom sheet (Base UI Drawer) and a popover that becomes a sheet on phones |
-| [`lib/prototype.ts`](lib/prototype.ts) | `comingSoon()` toast for features outside the prototype |
 | [`app/icon.svg`](app/icon.svg), [`app/apple-icon.tsx`](app/apple-icon.tsx) | Favicon and Apple touch icon from the logo mark |
 | [`lib/data.ts`](lib/data.ts) | Mock properties, KPIs, chart series and sales |

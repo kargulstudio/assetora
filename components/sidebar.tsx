@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
-import { comingSoon } from "@/lib/prototype"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   DropdownMenu,
@@ -248,12 +247,12 @@ export function Sidebar({
           <DropdownMenuContent side="top" align="start" sideOffset={8} className={cn(popupClass, "w-[228px]")}>
             <DropdownMenuLabel className="px-2 py-1.5 text-xs text-(--as-subtle)">{USER.email}</DropdownMenuLabel>
             {["Profile", "Workspace settings", "Billing"].map((l) => (
-              <DropdownMenuItem key={l} className={menuItemClass} onClick={() => comingSoon(l)}>
+              <DropdownMenuItem key={l} className={menuItemClass}>
                 {l}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator className="bg-(--as-line)" />
-            <DropdownMenuItem className={menuItemClass} onClick={() => comingSoon("Sign out")}>
+            <DropdownMenuItem className={menuItemClass}>
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

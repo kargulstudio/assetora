@@ -5,7 +5,6 @@ import { format, isSameYear } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { comingSoon } from "@/lib/prototype"
 import { Calendar } from "@/components/ui/calendar"
 import {
   DropdownMenu,
@@ -143,7 +142,7 @@ function KpiCard({ kpi }: { kpi: Kpi }) {
             >
               Copy value
             </DropdownMenuItem>
-            <DropdownMenuItem className={menuItemClass} onClick={() => comingSoon(`${kpi.title} details`)}>
+            <DropdownMenuItem className={menuItemClass}>
               View details
             </DropdownMenuItem>
           </DropdownMenuContent>

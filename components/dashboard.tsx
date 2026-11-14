@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { differenceInCalendarDays, isWithinInterval, parseISO, endOfDay, startOfDay } from "date-fns"
 import { toast } from "sonner"
-import { comingSoon } from "@/lib/prototype"
 import { BREAKPOINTS, useMediaQuery } from "@/lib/use-media-query"
 import { cn } from "@/lib/utils"
 import { DATE_PRESETS, SALES, TODAY, type NavItem, type Sale } from "@/lib/data"
@@ -59,10 +58,9 @@ export function AssetoraDashboard() {
 
   const rows = useMemo(() => filterSales(SALES, query, filters, sort), [query, filters, sort])
 
-  // Only Home is built; other screens announce themselves and Home stays active.
+  // Only Home is built; other destinations do nothing and Home stays active.
   const onNavigate = (item: NavItem) => {
     if (item.id === "home") setActiveNav(item.id)
-    else comingSoon(item.label)
   }
 
   const onExport = () => {
