@@ -288,7 +288,8 @@ function FigmaToggle({ checked, onCheckedChange }: { checked: boolean; onChecked
     >
       <SwitchPrimitive.Thumb
         className={cn(
-          "absolute top-[1px] left-[1px] size-4 transition-transform duration-200 data-checked:translate-x-4",
+          // 19×35 inside the 0.5px edge → a 16px knob centred 1.5px from each side, in both states
+          "absolute top-[1.5px] left-[1.5px] size-4 transition-transform duration-200 data-checked:translate-x-4",
           EASE
         )}
       >
