@@ -129,8 +129,12 @@ export function SellingReport() {
         </label>
       </div>
 
-      {/* Chart — 1:319 */}
-      <div className="flex flex-col gap-[15px]">
+      {/*
+        Chart — 1:319. Phones: a 720px-wide chart in an edge-to-edge strip that
+        pans sideways (no scrollbar); a tap still inspects a month.
+      */}
+      <div className="max-md:-mx-4 max-md:overflow-x-auto max-md:overscroll-x-contain max-md:px-4 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden">
+      <div className="flex flex-col gap-[15px] max-md:w-[720px]">
         <div
           role="img"
           tabIndex={0}
@@ -141,7 +145,7 @@ export function SellingReport() {
           onPointerLeave={(e) => e.pointerType === "mouse" && setHover(null)}
           onKeyDown={onKeyDown}
           onBlur={() => setHover(null)}
-          className="relative w-full cursor-crosshair touch-pan-y outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[rgba(16,103,255,0.45)] [--chip-inset:0px] max-md:[--chip-inset:36px]"
+          className="relative w-full cursor-crosshair touch-pan-y max-md:touch-auto outline-none select-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[rgba(16,103,255,0.45)] [--chip-inset:0px]"
           style={{ height: CHART_H }}
         >
           {/* vertical dashed grid (1:321) */}
@@ -250,6 +254,7 @@ export function SellingReport() {
             </p>
           ))}
         </div>
+      </div>
       </div>
     </section>
   )
