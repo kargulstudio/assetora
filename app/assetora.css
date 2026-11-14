@@ -70,8 +70,8 @@
 .assetora .as-chip {
   position: relative;
   background: var(--as-chip-color);
-  /* drop shadow + a 1px outer ring a shade darker than the fill */
-  box-shadow: var(--as-shadow-chip), 0px 0px 0px 1px color-mix(in srgb, var(--as-chip-color) 88%, #000);
+  /* drop shadow + a 1px outer ring in the chip's own colour (the inner glow lifts the fill above it) */
+  box-shadow: var(--as-shadow-chip), 0px 0px 0px 1px var(--as-chip-color);
 }
 /*
  * Figma's 1px inner stroke is a gradient: a white highlight along the top that
@@ -84,7 +84,7 @@
   padding: 1px;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.12));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 22%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0) 65%, rgba(0, 0, 0, 0.16));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
