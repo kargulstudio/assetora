@@ -54,7 +54,7 @@ export function TopBar({
     <header className="relative flex h-[63px] shrink-0 items-center justify-between gap-4 border-b border-(--as-line) bg-white p-4 max-md:gap-2 max-md:py-0">
       <div className="flex min-w-0 items-center gap-2">
         <button type="button" aria-label="Open menu" onClick={onOpenMenu} className={cn(iconButtonClass, "lg:hidden")}>
-          <FigmaImg name="align-left-01.svg" className="-scale-x-100" />
+          <FigmaImg name="menu-two-lines.svg" />
         </button>
         {/* the sidebar (and its logo) is a hidden drawer below lg, so the mark lives here */}
         <FigmaImg name="logo.svg" width={32} height={24} alt="Assetora" className="mx-1 lg:hidden" />
