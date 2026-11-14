@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -245,12 +246,14 @@ export function Sidebar({
             </TooltipContent>
           </Tooltip>
           <DropdownMenuContent side="top" align="start" sideOffset={8} className={cn(popupClass, "w-[228px]")}>
-            <DropdownMenuLabel className="px-2 py-1.5 text-xs text-(--as-subtle)">{USER.email}</DropdownMenuLabel>
-            {["Profile", "Workspace settings", "Billing"].map((l) => (
-              <DropdownMenuItem key={l} className={menuItemClass}>
-                {l}
-              </DropdownMenuItem>
-            ))}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="px-2 py-1.5 text-xs text-(--as-subtle)">{USER.email}</DropdownMenuLabel>
+              {["Profile", "Workspace settings", "Billing"].map((l) => (
+                <DropdownMenuItem key={l} className={menuItemClass}>
+                  {l}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
             <DropdownMenuSeparator className="bg-(--as-line)" />
             <DropdownMenuItem className={menuItemClass}>
               Sign out
